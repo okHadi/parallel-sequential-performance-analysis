@@ -173,7 +173,7 @@ python main.py --generate-plots
 
 ### Customizing Tests
 
-To modify test parameters (problem sizes, repetitions, etc.), edit the `run_all_tests()` function in `performance_analysis.py`:
+To modify test parameters (problem sizes, repetitions, etc.), edit the `main.py`:
 
 ```python
 # Example: Change matrix sizes to test
