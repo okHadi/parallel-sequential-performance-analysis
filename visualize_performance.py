@@ -60,8 +60,15 @@ def plot_execution_times(results, algorithm_name, output_dir="plots"):
     
     # Parallel times for each process count
     for p in results["num_processes"]:
-        plt.plot(x_data, results["parallel_times"][p], marker='*', linewidth=2, markersize=8, 
-                 label=f"Parallel ({p} processes)")
+        # Check if the key exists in the parallel_times dictionary
+        if str(p) in results["parallel_times"]:
+            plt.plot(x_data, results["parallel_times"][str(p)], marker='*', linewidth=2, markersize=8, 
+                     label=f"Parallel ({p} processes)")
+        elif p in results["parallel_times"]:
+            plt.plot(x_data, results["parallel_times"][p], marker='*', linewidth=2, markersize=8, 
+                     label=f"Parallel ({p} processes)")
+        else:
+            print(f"Warning: No data for process count {p} in {algorithm_name}")
     
     # Configure plot
     plt.xlabel(x_label)
@@ -120,7 +127,15 @@ def plot_speedup(results, metrics, algorithm_name, output_dir="plots"):
     # Plot actual speedup for each process count
     for p in results["num_processes"]:
         if p > 1:  # Don't plot speedup for p=1 (would just be a straight line at y=1)
-            plt.plot(x_data, metrics["speedup"][p], marker='*', linewidth=2, markersize=8, label=f"Actual ({p} processes)")
+            # Check if the key exists in the metrics dictionary as string or int
+            if str(p) in metrics["speedup"]:
+                plt.plot(x_data, metrics["speedup"][str(p)], marker='*', linewidth=2, markersize=8, 
+                         label=f"Actual ({p} processes)")
+            elif p in metrics["speedup"]:
+                plt.plot(x_data, metrics["speedup"][p], marker='*', linewidth=2, markersize=8, 
+                         label=f"Actual ({p} processes)")
+            else:
+                print(f"Warning: No speedup data for process count {p} in {algorithm_name}")
     
     # Configure plot
     plt.xlabel(x_label)
@@ -173,7 +188,13 @@ def plot_efficiency(results, metrics, algorithm_name, output_dir="plots"):
     # Plot actual efficiency for each process count
     for p in results["num_processes"]:
         if p > 1:  # Don't plot efficiency for p=1 (would just be a straight line at y=1)
-            plt.plot(x_data, metrics["efficiency"][p], marker='*', linewidth=2, markersize=8, label=f"{p} processes")
+            # Check if the key exists in the metrics dictionary as string or int
+            if str(p) in metrics["efficiency"]:
+                plt.plot(x_data, metrics["efficiency"][str(p)], marker='*', linewidth=2, markersize=8, label=f"{p} processes")
+            elif p in metrics["efficiency"]:
+                plt.plot(x_data, metrics["efficiency"][p], marker='*', linewidth=2, markersize=8, label=f"{p} processes")
+            else:
+                print(f"Warning: No efficiency data for process count {p} in {algorithm_name}")
     
     # Configure plot
     plt.xlabel(x_label)
@@ -231,7 +252,14 @@ def plot_scalability(results, algorithm_name, output_dir="plots"):
         speedup = []
         for p in process_counts:
             # T_sequential / T_parallel for this size and process count
-            s = results["sequential_times"][i] / results["parallel_times"][p][i]
+            # Check if the key exists in the parallel_times dictionary
+            if str(p) in results["parallel_times"]:
+                s = results["sequential_times"][i] / results["parallel_times"][str(p)][i]
+            elif p in results["parallel_times"]:
+                s = results["sequential_times"][i] / results["parallel_times"][p][i]
+            else:
+                print(f"Warning: No data for process count {p} in {algorithm_name}")
+                s = 1.0  # Default to no speedup if data is missing
             speedup.append(s)
         
         # Plot the speedup
@@ -269,14 +297,25 @@ def plot_amdahl_analysis(results, algorithm_name, output_dir="plots"):
     elif algorithm_name == "prime_generation":
         input_sizes = [end for _, end in results["ranges"]]
     elif algorithm_name == "monte_carlo_pi":
-        input_sizes = results["sample_samples"]
+        input_sizes = results["sample_sizes"]
     
     # Use the largest input size for Amdahl's Law analysis
     largest_idx = input_sizes.index(max(input_sizes))
     
     # Get sequential time and parallel times for the largest input size
     seq_time = results["sequential_times"][largest_idx]
-    par_times = {p: results["parallel_times"][p][largest_idx] for p in results["num_processes"]}
+    
+    # Handle both string and integer keys for parallel_times
+    par_times = {}
+    for p in results["num_processes"]:
+        if str(p) in results["parallel_times"]:
+            par_times[p] = results["parallel_times"][str(p)][largest_idx]
+        elif p in results["parallel_times"]:
+            par_times[p] = results["parallel_times"][p][largest_idx]
+        else:
+            print(f"Warning: No data for process count {p} in {algorithm_name}")
+            # Use sequential time as fallback (no speedup)
+            par_times[p] = seq_time
     
     # Calculate observed speedups
     observed_speedups = {p: seq_time / par_times[p] for p in results["num_processes"]}
@@ -378,7 +417,13 @@ def plot_gustafson_analysis(results, algorithm_name, output_dir="plots"):
         
         for p in process_counts:
             # Get parallel time for this size and process count
-            par_time = results["parallel_times"][p][i]
+            if str(p) in results["parallel_times"]:
+                par_time = results["parallel_times"][str(p)][i]
+            elif p in results["parallel_times"]:
+                par_time = results["parallel_times"][p][i]
+            else:
+                print(f"Warning: No data for process count {p} in {algorithm_name}")
+                par_time = seq_time  # Default to sequential time if data is missing
             
             # Calculate observed speedup
             speedup = seq_time / par_time
@@ -466,7 +511,11 @@ def create_comparison_chart(algorithms, output_dir="plots"):
         max_speedup = 0
         for p in results["num_processes"]:
             if p > 1:  # Skip p=1 as speedup would be 1
-                max_speedup = max(max_speedup, max(metrics["speedup"][p]))
+                # Check if the key exists in metrics dictionary as string or int
+                if str(p) in metrics["speedup"]:
+                    max_speedup = max(max_speedup, max(metrics["speedup"][str(p)]))
+                elif p in metrics["speedup"]:
+                    max_speedup = max(max_speedup, max(metrics["speedup"][p]))
         max_speedups.append(max_speedup)
         
         # Calculate average efficiency across all process counts and input sizes
@@ -474,8 +523,13 @@ def create_comparison_chart(algorithms, output_dir="plots"):
         count = 0
         for p in results["num_processes"]:
             if p > 1:  # Skip p=1 as efficiency would be 1
-                avg_efficiency += sum(metrics["efficiency"][p])
-                count += len(metrics["efficiency"][p])
+                # Check if the key exists in metrics dictionary as string or int
+                if str(p) in metrics["efficiency"]:
+                    avg_efficiency += sum(metrics["efficiency"][str(p)])
+                    count += len(metrics["efficiency"][str(p)])
+                elif p in metrics["efficiency"]:
+                    avg_efficiency += sum(metrics["efficiency"][p])
+                    count += len(metrics["efficiency"][p])
         avg_efficiency = avg_efficiency / count if count > 0 else 0
         avg_efficiencies.append(avg_efficiency)
         
@@ -484,7 +538,27 @@ def create_comparison_chart(algorithms, output_dir="plots"):
         largest_idx = -1  # Use the largest input size
         max_p = max(results["num_processes"])
         if max_p > 1:
-            observed_speedup = results["sequential_times"][largest_idx] / results["parallel_times"][max_p][largest_idx]
+            # Safely access parallel times with string or int key
+            if str(max_p) in results["parallel_times"]:
+                max_p_time = results["parallel_times"][str(max_p)][largest_idx]
+            elif max_p in results["parallel_times"]:
+                max_p_time = results["parallel_times"][max_p][largest_idx]
+            else:
+                # Find the highest process count that exists in the data
+                available_p = [p for p in results["num_processes"] if p > 1 and 
+                              (p in results["parallel_times"] or str(p) in results["parallel_times"])]
+                
+                if available_p:
+                    max_p = max(available_p)
+                    if str(max_p) in results["parallel_times"]:
+                        max_p_time = results["parallel_times"][str(max_p)][largest_idx]
+                    else:
+                        max_p_time = results["parallel_times"][max_p][largest_idx]
+                else:
+                    # No parallel data available
+                    max_p_time = results["sequential_times"][largest_idx]
+                    
+            observed_speedup = results["sequential_times"][largest_idx] / max_p_time
             serial_fraction = (1 - observed_speedup/max_p) / (1 - 1/max_p)
             serial_fraction = max(0, min(1, serial_fraction))  # Ensure it's between 0 and 1
         else:
@@ -493,7 +567,17 @@ def create_comparison_chart(algorithms, output_dir="plots"):
         
         # Calculate execution time improvement (sequential vs. best parallel)
         seq_time = results["sequential_times"][largest_idx]
-        best_par_time = min([results["parallel_times"][p][largest_idx] for p in results["num_processes"] if p > 1])
+        
+        # Find the best parallel time safely
+        par_times = []
+        for p in results["num_processes"]:
+            if p > 1:  # Only consider parallel processes (p > 1)
+                if str(p) in results["parallel_times"]:
+                    par_times.append(results["parallel_times"][str(p)][largest_idx])
+                elif p in results["parallel_times"]:
+                    par_times.append(results["parallel_times"][p][largest_idx])
+        
+        best_par_time = min(par_times) if par_times else seq_time
         time_improvement = seq_time / best_par_time
         time_improvements.append(time_improvement)
     

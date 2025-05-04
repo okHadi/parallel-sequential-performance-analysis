@@ -291,7 +291,7 @@ def run_all_tests():
     
     # 1. Matrix Multiplication tests
     print("\n=== Matrix Multiplication Performance Tests ===")
-    matrix_sizes = [500, 1000, 1500]
+    matrix_sizes = [50, 100, 150]
     matrix_results = test_matrix_multiplication(matrix_sizes, num_processes_list)
     matrix_metrics = calculate_speedup_efficiency(matrix_results)
     matrix_filename = save_results(matrix_results, matrix_metrics, "matrix_multiplication")
