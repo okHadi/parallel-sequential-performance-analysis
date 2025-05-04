@@ -26,23 +26,27 @@ matrix-multiply-performance-analysis/
 ### 1. Matrix Multiplication
 
 #### Sequential Implementation
+
 The sequential matrix multiplication algorithm uses three nested loops with O(n³) time complexity:
+
 ```python
 def sequential_matrix_multiply(A, B):
     # Initialize result matrix C of size A.rows × B.columns with zeros
     C = np.zeros((A.shape[0], B.shape[1]))
-    
+
     # Triple nested loop to compute the product
     for i in range(A.shape[0]):        # For each row in A
         for j in range(B.shape[1]):    # For each column in B
             for k in range(A.shape[1]): # For each element in row i of A and column j of B
                 C[i, j] += A[i, k] * B[k, j]
-                
+
     return C
 ```
 
 #### Parallel Implementation
+
 The parallel implementation divides the work by distributing rows of the result matrix across multiple processes:
+
 1. The input matrix A is divided into chunks based on the number of available processors
 2. Each process computes its assigned chunk of rows of the result matrix
 3. Results from all processes are combined to form the final matrix
@@ -50,7 +54,9 @@ The parallel implementation divides the work by distributing rows of the result 
 This approach minimizes inter-process communication as each process can compute its assigned rows independently.
 
 #### NumPy Baseline
+
 For comparison, we also use NumPy's highly optimized matrix multiplication which leverages:
+
 - BLAS (Basic Linear Algebra Subprograms) libraries
 - Vectorized operations
 - Cache-optimized algorithms
@@ -58,7 +64,9 @@ For comparison, we also use NumPy's highly optimized matrix multiplication which
 ### 2. Prime Number Generation
 
 #### Sequential Implementation
+
 The sequential prime number algorithm checks each number in a range:
+
 ```python
 def sequential_find_primes(start, end):
     primes = []
@@ -71,7 +79,7 @@ def is_prime(n):
     if n <= 1: return False
     if n <= 3: return True
     if n % 2 == 0 or n % 3 == 0: return False
-    
+
     # Check all potential factors of form 6k±1 up to sqrt(n)
     i = 5
     while i * i <= n:
@@ -82,7 +90,9 @@ def is_prime(n):
 ```
 
 #### Parallel Implementation
+
 The parallel implementation:
+
 1. Divides the range of numbers into chunks
 2. Assigns each chunk to a separate process
 3. Each process identifies prime numbers in its chunk
@@ -93,27 +103,31 @@ This approach is an example of "embarrassingly parallel" computation since each 
 ### 3. Monte Carlo Pi Estimation
 
 #### Sequential Implementation
+
 The sequential Monte Carlo Pi estimation uses random sampling:
+
 ```python
 def sequential_monte_carlo_pi(num_samples):
     inside_circle = 0
-    
+
     for _ in range(num_samples):
         # Generate random point (x,y) in the unit square [0,1] × [0,1]
         x = random.random()
         y = random.random()
-        
+
         # Check if the point is inside the quarter circle
         if x*x + y*y <= 1:
             inside_circle += 1
-    
+
     # Calculate Pi estimate: (points inside / total points) * 4
     pi_estimate = (inside_circle / num_samples) * 4
     return pi_estimate
 ```
 
 #### Parallel Implementation
+
 The parallel implementation:
+
 1. Divides the total number of samples across processes
 2. Each process generates its portion of random points and counts those inside the circle
 3. The counts from all processes are summed
@@ -177,6 +191,7 @@ sample_sizes = [1000000, 5000000]  # Default: [1000000, 5000000, 10000000]
 ### Test Results (JSON files)
 
 After running performance tests, JSON files are generated in the `results/` directory with timestamps, containing:
+
 - Execution times for each algorithm, input size, and process count
 - Calculated speedup and efficiency metrics
 - System information (available CPU cores)
@@ -186,20 +201,23 @@ After running performance tests, JSON files are generated in the `results/` dire
 Running with `--generate-plots` creates visualizations in the `plots/` directory:
 
 #### 1. Execution Time Plots
+
 - **Filename pattern**: `*_execution_times.png`
 - **What they show**: Execution time vs. input size for sequential and parallel implementations
 - **How to interpret**: Lower execution times are better. Look for downward curves that show the algorithm scales well as the number of processes increases.
 - **Log-log scale**: These plots use logarithmic scales for both axes to better visualize large differences.
 
 #### 2. Speedup Plots
+
 - **Filename pattern**: `*_speedup.png`
 - **What they show**: Speedup (T_sequential/T_parallel) vs. input size for different process counts
-- **How to interpret**: 
+- **How to interpret**:
   - Higher values indicate better parallel performance
   - Compare with the "ideal" dashed lines to see how close the implementation gets to theoretical speedup
   - If speedup increases with problem size, it indicates good scaling characteristics
 
 #### 3. Efficiency Plots
+
 - **Filename pattern**: `*_efficiency.png`
 - **What they show**: Efficiency (speedup/number of processes) vs. input size
 - **How to interpret**:
@@ -208,6 +226,7 @@ Running with `--generate-plots` creates visualizations in the `plots/` directory
   - Higher efficiency for larger problem sizes shows good scaling behavior
 
 #### 4. Strong Scaling Plots
+
 - **Filename pattern**: `*_strong_scaling.png`
 - **What they show**: Speedup vs. number of processes for fixed problem sizes
 - **How to interpret**:
@@ -216,6 +235,7 @@ Running with `--generate-plots` creates visualizations in the `plots/` directory
   - Different curves for different problem sizes show how scaling behavior changes
 
 #### 5. Amdahl's Law Analysis
+
 - **Filename pattern**: `*_amdahl_analysis.png`
 - **What they show**: Observed speedup vs. theoretical maximum speedup based on estimated serial fraction
 - **How to interpret**:
@@ -225,6 +245,7 @@ Running with `--generate-plots` creates visualizations in the `plots/` directory
   - If observed points follow the curve closely, it validates the serial fraction estimate
 
 #### 6. Gustafson's Law Analysis
+
 - **Filename pattern**: `*_gustafson_analysis.png`
 - **What they show**: Scaled speedup for different problem sizes as processes increase
 - **How to interpret**:
@@ -233,6 +254,7 @@ Running with `--generate-plots` creates visualizations in the `plots/` directory
   - Higher curves indicate problems that scale better with increasing processors
 
 #### 7. Algorithm Comparison Summary
+
 - **Filename**: `algorithm_comparison_summary.png`
 - **What it shows**: Side-by-side comparison of all algorithms on key metrics
 - **How to interpret**:
@@ -252,10 +274,12 @@ Speedup(N) = 1 / (s + (1-s)/N)
 ```
 
 Where:
+
 - `s` is the serial fraction (portion that cannot be parallelized)
 - `N` is the number of processors
 
 **Key insights**:
+
 - Even a small serial fraction significantly limits maximum possible speedup
 - As N approaches infinity, maximum speedup approaches 1/s
 - This explains why some algorithms show diminishing returns with more processors
@@ -269,6 +293,7 @@ Scaled Speedup(N) = N + (1-N) * s
 ```
 
 **Key insights**:
+
 - Larger problems can achieve better speedup even with the same serial fraction
 - Focuses on how increasing both problem size and processors enables solving larger problems
 - Better represents real-world usage where larger resources handle larger problems
@@ -284,11 +309,13 @@ The estimated serial fraction (from the Amdahl analysis plots) reveals important
 ### Performance Metrics Explained
 
 1. **Speedup**: T_sequential / T_parallel
+
    - Linear speedup (equal to N) is ideal but rarely achieved
    - Sub-linear speedup (less than N) is typical due to overhead
    - Super-linear speedup (greater than N) is possible with cache effects but uncommon
 
 2. **Efficiency**: Speedup / N
+
    - Values close to 1.0 indicate efficient parallelization
    - Decreasing efficiency with more processors indicates overhead
    - Helps determine the optimal number of processors
@@ -302,6 +329,7 @@ The estimated serial fraction (from the Amdahl analysis plots) reveals important
 ### Matrix Multiplication
 
 Typically demonstrates:
+
 - Good speedup for large matrices
 - Poor speedup for small matrices due to overhead
 - Medium serial fraction (~0.1-0.3)
@@ -311,7 +339,8 @@ Typically demonstrates:
 ### Prime Number Generation
 
 Typically demonstrates:
-- Excellent speedup (nearly linear) 
+
+- Excellent speedup (nearly linear)
 - Very low serial fraction (~0.01-0.05)
 - Good efficiency even with many processors
 - Classic example of "embarrassingly parallel" computation
@@ -319,6 +348,7 @@ Typically demonstrates:
 ### Monte Carlo Pi Estimation
 
 Typically demonstrates:
+
 - Excellent speedup (nearly linear)
 - Very low serial fraction
 - Consistent performance across different sample sizes
@@ -345,6 +375,7 @@ To contribute to this project:
 4. Submit a pull request with a clear description of your changes
 
 We welcome improvements to:
+
 - Algorithm implementations
 - Visualization techniques
 - Performance metrics

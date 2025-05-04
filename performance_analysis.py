@@ -291,21 +291,21 @@ def run_all_tests():
     
     # 1. Matrix Multiplication tests
     print("\n=== Matrix Multiplication Performance Tests ===")
-    matrix_sizes = [50, 100, 150]
+    matrix_sizes = [500, 1000, 1500]
     matrix_results = test_matrix_multiplication(matrix_sizes, num_processes_list)
     matrix_metrics = calculate_speedup_efficiency(matrix_results)
     matrix_filename = save_results(matrix_results, matrix_metrics, "matrix_multiplication")
     
     # 2. Prime Number Generation tests
     print("\n=== Prime Number Generation Performance Tests ===")
-    prime_ranges = [(1, 100000), (1, 500000), (1, 1000000)]
+    prime_ranges = [(1, 1000000), (1, 5000000), (1, 10000000)]
     prime_results = test_prime_generation(prime_ranges, num_processes_list)
     prime_metrics = calculate_speedup_efficiency(prime_results)
     prime_filename = save_results(prime_results, prime_metrics, "prime_generation")
     
     # 3. Monte Carlo Pi Estimation tests
     print("\n=== Monte Carlo Pi Estimation Performance Tests ===")
-    sample_sizes = [1000000, 5000000, 10000000]
+    sample_sizes = [10000000, 50000000, 100000000]
     pi_results = test_monte_carlo_pi(sample_sizes, num_processes_list)
     pi_metrics = calculate_speedup_efficiency(pi_results)
     pi_filename = save_results(pi_results, pi_metrics, "monte_carlo_pi")
